@@ -1,12 +1,10 @@
 /*
-  Shift Register Example
-  Turning on the outputs of a 74HC595 using an array
 
- Hardware:
- * 74HC595 shift register
- * LEDs attached to each of the outputs of the shift register
+ Runs through each letter of the alphabet, illuminating each in turn. 
 
  */
+
+ 
 //Pin connected to ST_CP of 74HC595
 int latchPin = 5;
 //Pin connected to SH_CP of 74HC595
@@ -14,8 +12,10 @@ int clockPin = 6;
 ////Pin connected to DS of 74HC595
 int dataPin = 4;
 
+int outputEnablePin = 3;
 
-int numOfRegisters = 3;
+
+int numOfRegisters = 4;
 byte* registerState;
 
 long effectId = 0;
@@ -34,10 +34,12 @@ void setup() {
   pinMode(latchPin, OUTPUT);
   pinMode(clockPin, OUTPUT);
   pinMode(dataPin, OUTPUT);
+
+  setBrightness(25);
 }
 
 void loop() {
-  for (int ii=0;ii<24;ii++)
+  for (int ii=6;ii<32;ii++)
   {
     regWrite(ii,HIGH);
     delay(500);
@@ -123,6 +125,7 @@ void effectE(int speed){
 }
 
 void regWrite(int pin, bool state){
+  /* https://github.com/janisrove/Arduino-74HC595-shift-registers */
   //Determines register
   int reg = pin / 8;
   //Determines pin for actual register
@@ -146,4 +149,10 @@ void regWrite(int pin, bool state){
 
   //End session
   digitalWrite(latchPin, HIGH);
+}
+
+/* https://learn.adafruit.com/adafruit-arduino-lesson-4-eight-leds/brightness-control */
+void setBrightness(byte brightness) // 0 to 255
+{
+  analogWrite(outputEnablePin, 255-brightness);
 }
