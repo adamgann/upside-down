@@ -3358,18 +3358,24 @@ This footprint was designed to help hold the alignment of a through-hole compone
 <pinref part="J1" gate="G$1" pin="5"/>
 </segment>
 <segment>
-<pinref part="U3" gate="U1" pin="SCK"/>
-<label x="223.52" y="27.94" size="1.778" layer="95"/>
-<pinref part="U2" gate="U1" pin="SCK"/>
-<label x="139.7" y="27.94" size="1.778" layer="95"/>
-<wire x1="231.14" y1="27.94" x2="147.32" y2="27.94" width="0.1524" layer="91"/>
-<pinref part="U4" gate="U1" pin="SCK"/>
-<label x="307.34" y="27.94" size="1.778" layer="95"/>
-<wire x1="147.32" y1="27.94" x2="317.5" y2="27.94" width="0.1524" layer="91"/>
 <pinref part="U1" gate="U1" pin="SCK"/>
 <wire x1="71.12" y1="27.94" x2="60.96" y2="27.94" width="0.1524" layer="91"/>
 <label x="60.96" y="27.94" size="1.778" layer="95"/>
-<wire x1="147.32" y1="27.94" x2="71.12" y2="27.94" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="U2" gate="U1" pin="SCK"/>
+<wire x1="147.32" y1="27.94" x2="139.7" y2="27.94" width="0.1524" layer="91"/>
+<label x="139.7" y="27.94" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="U3" gate="U1" pin="SCK"/>
+<wire x1="231.14" y1="27.94" x2="223.52" y2="27.94" width="0.1524" layer="91"/>
+<label x="223.52" y="27.94" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="U4" gate="U1" pin="SCK"/>
+<wire x1="317.5" y1="27.94" x2="307.34" y2="27.94" width="0.1524" layer="91"/>
+<label x="307.34" y="27.94" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="OE" class="0">
