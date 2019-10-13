@@ -5,6 +5,7 @@ Play the main sequence on the wall.
 Adam Gannon - October 2019. 
 
  */
+#include <avr/sleep.h>
 
 // The first LED (A) is at register value 6
 // The last LED (Z) is at register value 32
@@ -76,28 +77,28 @@ void loop()
 }
 
 // Blocking call that waits until the state of the button changes 
-// FIXME: tie buttonPin to an interrupt and put Arduino to sleep here. 
 void wait_on_button()
 {
-  int buttonStore = digitalRead(buttonPin); 
-  bool run_loop = true;
-  while( run_loop)
-  {
-    delay(10);
-    int buttonState = digitalRead(buttonPin);
-    if (buttonState != buttonStore)
-    {
-      run_loop = false;// Break and start the sequence
-    }
-  }
+  EIFR = _BV (INTF0);
+  sleep_enable();
+  attachInterrupt(digitalPinToInterrupt(buttonPin),wake_up,CHANGE);
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+  sleep_cpu(); //Stays here until interrupt is fired
 }
+void wake_up()
+{
+  sleep_disable();
+  detachInterrupt(digitalPinToInterrupt(buttonPin));
+}
+
 
 // Run the whole sequence once
 void run_once()
 {
+  
   // "Okay. Okay baby talk to me"
   delay(5000);
-  int right_delay[] = {5000,2000,1200,1500,2000};
+  int right_delay[] = {5000,2000,1200,1500,1500};
   int here_delay[] = {2000,1000,1000,1000};
   flash_phrase("RIGHT",right_delay);
   flash_phrase("HERE",here_delay);
@@ -107,17 +108,16 @@ void run_once()
   delay(13000);
   
   // "What should I do?"
-  int run_delay[] = {2000,3500,4000};
+  int run_delay[] = {2000,3000,3500};
   flash_phrase("RUN",run_delay);
   delay(200);
 
   // Oh shit!
   flash_all(15000);
-  
 }
 
 
-// The demagorgon sequence. Flash a random chunk of LEDs for flash_time
+// The demogorgon sequence. Flash a random chunk of LEDs for flash_time
 // Randomize the time on and off between flashes. 
 void flash_all(int flash_time)
 {
