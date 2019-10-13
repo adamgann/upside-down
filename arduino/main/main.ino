@@ -1,13 +1,13 @@
 /*
-  Shift Register Example
-  Turning on the outputs of a 74HC595 using an array
 
- Hardware:
- * 74HC595 shift register
- * LEDs attached to each of the outputs of the shift register
+Play the main sequence on the wall. 
+
+Adam Gannon - October 2019. 
 
  */
 
+// The first LED is at register value 6
+int ALPHA_START = 6;
  
 //Pin connected to ST_CP of 74HC595
 int latchPin = 5;
@@ -28,6 +28,10 @@ long effectRepeat = 0;
 long effectSpeed = 30;
 
 void setup() {
+
+  // Seed our RNG
+  randomSeed(analogRead(0));
+  
   //Initialize array
   registerState = new byte[numOfRegisters];
   for (size_t i = 0; i < numOfRegisters; i++) {
@@ -39,94 +43,134 @@ void setup() {
   pinMode(clockPin, OUTPUT);
   pinMode(dataPin, OUTPUT);
 
-  setBrightness(25);
+  setBrightness(125);
+  //flash_all(15000);
 }
 
-void loop() {
-  for (int ii=6;ii<32;ii++)
-  {
-    regWrite(ii,HIGH);
-    delay(500);
-    regWrite(ii,LOW);
-  }
+void loop() 
+{
 
+  // Run continuously, while on.
+  // Take a 30 second break between 
+  run_once();
+  delay(30000);
+
+
+}
+
+// Run the whole sequence once
+void run_once()
+{
+  // "Where are you?"
+  delay(1000);
+  int right_delay[] = {5000,2000,1200,1500,2000};
+  int here_delay[] = {2000,1000,1000,1000};
+  flash_phrase("RIGHT",right_delay);
+  flash_phrase("HERE",here_delay);
+
+  // "Right here? I don't know what that means?
+  // Lights are all off during this
+  delay(13000);
+  
+  // "What should I do?"
+  int run_delay[] = {2000,3500,4000};
+  flash_phrase("RUN",run_delay);
+  delay(200);
+
+  // Oh shit!
+  flash_all(15000);
   
 }
 
-void effectA(int speed){
-  for (int i = 0; i < 16; i++){
-    for (int k = i; k < 16; k++){
-      regWrite(k, HIGH);
-      delay(speed);
-      regWrite(k, LOW);
-    }
 
-    //regWrite(i, HIGH);
+// The demagorgon sequence. Flash a random chunk of LEDs for flash_time
+void flash_all(int flash_time)
+{
+  unsigned long start_time = millis();
+  while( (millis() - start_time) < flash_time )
+  {
+    long rand_on_time = random(40,80);
+    long rand_off_time = random(40,80);
+    
+    rand_on();
+    delay(rand_on_time);
+    write_all(LOW);
+    clear_reg();
+    delay(rand_off_time);
+  }
+  
+}
+
+void rand_on()
+{
+  // Number of simultaneous LEDs that are on
+  long rand_leds = random(4,26); 
+
+  for (int iled=0;iled<rand_leds;iled++)
+  {
+    long rand_letter = random(6,33); //Register values of A-Z
+    regWrite(rand_letter,HIGH);    
+  }
+
+}
+
+
+// Clear the register state vector
+void clear_reg()
+{
+  for (int ii=0;ii<numOfRegisters;ii++)
+  {
+    registerState[ii] = 0;
   }
 }
 
-void effectB(int speed){
-  for (int i = 15; i >= 0; i--){
-    for (int k = 0; k < i; k++){
-      regWrite(k, HIGH);
-      delay(speed);
-      regWrite(k, LOW);
-    }
 
-    regWrite(i, HIGH);
-  }
+// Letters flash one after another, without pause.
+// Each letter is up for about 2 seconds
+void flash_phrase(String phrase, int delay_vec[])
+{
+  for (int ii=0;ii<phrase.length();ii++)
+  {
+    write_letter(phrase[ii],delay_vec[ii]);
+  }  
 }
 
-void effectC(int speed){
-  int prevI = 0;
-  for (int i = 0; i < 16; i++){
-    regWrite(prevI, LOW);
-    regWrite(i, HIGH);
-    prevI = i;
 
-    delay(speed);
-  }
 
-  for (int i = 15; i >= 0; i--){
-    regWrite(prevI, LOW);
-    regWrite(i, HIGH);
-    prevI = i;
+// Flash a single letter for delay_val milliseconds
+// This function accepts capital letters only (65-90)
+void write_letter(char letter, int delay_val)
+{
+    // ALPHA_START (6) is the start of the register.
+    // 65 is the ASCII value of 'A', the first letter
+    int reg_val = letter - 65 + ALPHA_START;
 
-    delay(speed);
-  }
+    // Turn on and hold
+    regWrite(reg_val,HIGH);
+    delay(delay_val);
+    regWrite(reg_val,LOW);
 }
 
-void effectD(int speed){
-  for (int i = 0; i < 8; i++){
-    for (int k = i; k < 8; k++)
-    {
-      regWrite(k, HIGH);
-      regWrite(15 - k, HIGH);
-      delay(speed);
-      regWrite(k, LOW);
-      regWrite(15 - k, LOW);
-    }
-
-    regWrite(i, HIGH);
-    regWrite(15 - i, HIGH);
+void write_all(bool state)
+{
+  byte states;
+  if (state == LOW)
+  {
+    states = 0;
   }
+  else
+  {
+    states = 255;
+  }
+  
+  digitalWrite(latchPin, LOW);
+  for (int i = 0; i < numOfRegisters; i++)
+  {
+    shiftOut(dataPin, clockPin, LSBFIRST, states);
+  }
+  digitalWrite(latchPin, HIGH);
 }
 
-void effectE(int speed){
-  for (int i = 7; i >= 0; i--){
-    for (int k = 0; k <= i; k++)
-    {
-      regWrite(k, HIGH);
-      regWrite(15 - k, HIGH);
-      delay(speed);
-      regWrite(k, LOW);
-      regWrite(15 - k, LOW);
-    }
-
-    regWrite(i, HIGH);
-    regWrite(15 - i, HIGH);
-  }
-}
 
 void regWrite(int pin, bool state){
   /* https://github.com/janisrove/Arduino-74HC595-shift-registers */
