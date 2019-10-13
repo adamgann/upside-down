@@ -835,15 +835,6 @@ design rules under a new name.</description>
 <vertex x="0" y="76.2"/>
 <vertex x="0" y="0"/>
 </polygon>
-<polygon width="0.0254" layer="16">
-<vertex x="0" y="0"/>
-<vertex x="0" y="76.2"/>
-<vertex x="0.254" y="76.2"/>
-<vertex x="90.932" y="76.2"/>
-<vertex x="90.932" y="50.546"/>
-<vertex x="90.932" y="0"/>
-<vertex x="62.738" y="0"/>
-</polygon>
 </signal>
 <signal name="LATCH">
 <contactref element="J5" pad="4"/>
