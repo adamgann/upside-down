@@ -6,40 +6,33 @@ Adam Gannon - October 2019.
 
  */
 
-// The first LED is at register value 6
-int ALPHA_START = 6;
+// The first LED (A) is at register value 6
+// The last LED (Z) is at register value 32
+const int REG_START = 6;
+const int REG_STOP = 32;
 
 
 // The external button
 const int buttonPin = 2;     // the number of the pushbutton pin
-
 // The onboard LED for status
 const int ledPin =  13;      // the number of the LED pin
-
-// variables will change:
-int buttonState = 0;         // variable for reading the pushbutton status
-
 //Pin connected to ST_CP of 74HC595
 int latchPin = 5;
 //Pin connected to SH_CP of 74HC595
 int clockPin = 6;
 ////Pin connected to DS of 74HC595
 int dataPin = 4;
-
+// Pin connected to OE of 74HC595
 int outputEnablePin = 3;
 
-
+// Globals for LED registers 
 int numOfRegisters = 4;
 byte* registerState;
 
-long effectId = 0;
-long prevEffect = 0;
-long effectRepeat = 0;
-long effectSpeed = 30;
 
 void setup() {
 
-  // Seed our RNG
+  // Seed our RNG by reading noise
   randomSeed(analogRead(0));
   
   //Initialize array
@@ -52,15 +45,17 @@ void setup() {
   pinMode(latchPin, OUTPUT);
   pinMode(clockPin, OUTPUT);
   pinMode(dataPin, OUTPUT);
+  pinMode(outputEnablePin, OUTPUT);
 
+  // LEDs can be *really* bright, particularly at a dark party. Tone it down a little
   setBrightness(125);
-  //flash_all(15000);
 
-    // initialize the onboard LED pin as an output:
+  // initialize the onboard LED pin as an output:
   pinMode(ledPin, OUTPUT);
   // initialize the pushbutton pin as an input:
   pinMode(buttonPin, INPUT);
 
+  // Start with nothing displayed on the LEDs
   clear_reg();
   write_all(LOW);
   
@@ -80,6 +75,8 @@ void loop()
 
 }
 
+// Blocking call that waits until the state of the button changes 
+// FIXME: tie buttonPin to an interrupt and put Arduino to sleep here. 
 void wait_on_button()
 {
   int buttonStore = digitalRead(buttonPin); 
@@ -87,7 +84,7 @@ void wait_on_button()
   while( run_loop)
   {
     delay(10);
-    buttonState = digitalRead(buttonPin);
+    int buttonState = digitalRead(buttonPin);
     if (buttonState != buttonStore)
     {
       run_loop = false;// Break and start the sequence
@@ -121,6 +118,7 @@ void run_once()
 
 
 // The demagorgon sequence. Flash a random chunk of LEDs for flash_time
+// Randomize the time on and off between flashes. 
 void flash_all(int flash_time)
 {
   unsigned long start_time = millis();
@@ -145,7 +143,7 @@ void rand_on()
 
   for (int iled=0;iled<rand_leds;iled++)
   {
-    long rand_letter = random(6,33); //Register values of A-Z
+    long rand_letter = random(REG_START,REG_STOP+1); //Register values of A-Z
     regWrite(rand_letter,HIGH);    
   }
 
@@ -180,7 +178,7 @@ void write_letter(char letter, int delay_val)
 {
     // ALPHA_START (6) is the start of the register.
     // 65 is the ASCII value of 'A', the first letter
-    int reg_val = letter - 65 + ALPHA_START;
+    int reg_val = letter - 65 + REG_START;
 
     // Turn on and hold
     regWrite(reg_val,HIGH);
