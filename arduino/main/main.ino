@@ -8,7 +8,17 @@ Adam Gannon - October 2019.
 
 // The first LED is at register value 6
 int ALPHA_START = 6;
- 
+
+
+// The external button
+const int buttonPin = 2;     // the number of the pushbutton pin
+
+// The onboard LED for status
+const int ledPin =  13;      // the number of the LED pin
+
+// variables will change:
+int buttonState = 0;         // variable for reading the pushbutton status
+
 //Pin connected to ST_CP of 74HC595
 int latchPin = 5;
 //Pin connected to SH_CP of 74HC595
@@ -45,24 +55,51 @@ void setup() {
 
   setBrightness(125);
   //flash_all(15000);
+
+    // initialize the onboard LED pin as an output:
+  pinMode(ledPin, OUTPUT);
+  // initialize the pushbutton pin as an input:
+  pinMode(buttonPin, INPUT);
+
+  clear_reg();
+  write_all(LOW);
+  
 }
 
 void loop() 
 {
 
-  // Run continuously, while on.
-  // Take a 30 second break between 
+  // Wait on button press to start sequence.
+  // Use the onboard LED for status
+  wait_on_button();
+  digitalWrite(ledPin,HIGH);
   run_once();
-  delay(30000);
+  digitalWrite(ledPin,LOW);
+  
+ 
 
+}
 
+void wait_on_button()
+{
+  int buttonStore = digitalRead(buttonPin); 
+  bool run_loop = true;
+  while( run_loop)
+  {
+    delay(10);
+    buttonState = digitalRead(buttonPin);
+    if (buttonState != buttonStore)
+    {
+      run_loop = false;// Break and start the sequence
+    }
+  }
 }
 
 // Run the whole sequence once
 void run_once()
 {
-  // "Where are you?"
-  delay(1000);
+  // "Okay. Okay baby talk to me"
+  delay(5000);
   int right_delay[] = {5000,2000,1200,1500,2000};
   int here_delay[] = {2000,1000,1000,1000};
   flash_phrase("RIGHT",right_delay);
